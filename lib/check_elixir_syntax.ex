@@ -1,0 +1,2 @@
+defmodule CheckElixirSyntax do
+end
