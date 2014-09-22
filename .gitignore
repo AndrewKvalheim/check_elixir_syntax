@@ -2,3 +2,4 @@
 /deps
 erl_crash.dump
 *.ez
+/check_elixir_syntax

@@ -5,6 +5,7 @@ defmodule CheckElixirSyntax.Mixfile do
     [app: :check_elixir_syntax,
      version: "0.0.1",
      elixir: "~> 1.0.0",
+     escript: escript,
      deps: deps]
   end
 
@@ -13,6 +14,10 @@ defmodule CheckElixirSyntax.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [applications: [:logger]]
+  end
+
+  defp escript do
+    [main_module: CheckElixirSyntax]
   end
 
   # Dependencies can be Hex packages:
@@ -25,6 +30,6 @@ defmodule CheckElixirSyntax.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [poison: "~> 1.2.0"]
   end
 end
