@@ -1,5 +1,39 @@
 defmodule CheckElixirSyntaxTest do
+  import ExUnit.CaptureIO
+  use ExUnit.Case
+  import CheckElixirSyntaxTest.Helper
+
+  #
+  # Metadata
+  #
+
+  test "Report a version number" do
+    version = run(["--version"])
+    assert version =~ ~r/\d+\.\d+\.\d+/
+  end
+
+  #
+  # Valid input
+  #
+
   @nothing Poison.Parser.parse!(~s([]))
+
+  test "When the file is empty, report nothing." do
+    assert fixture("empty") == @nothing
+  end
+
+  test "When the standard input is empty, report nothing." do
+    assert fixture("empty", :stdio) == @nothing
+  end
+
+  test "When the file is valid, report nothing." do
+    assert fixture("valid") == @nothing
+  end
+
+  #
+  # Syntax errors
+  #
+
   @single_syntax_error Poison.Parser.parse!(~s([{
     "line": 3,
     "message": "invalid token: :123",
@@ -7,50 +41,15 @@ defmodule CheckElixirSyntaxTest do
     "type": "error"
   }]))
 
-  import ExUnit.CaptureIO
-  use ExUnit.Case
-  alias CheckElixirSyntax, as: CES
-
-  test "Report a version number" do
-    version = capture_io(fn -> CES.main(["--version"]) end)
-    assert version =~ ~r/\d+\.\d+\.\d+/
-  end
-
-  test "When the file is empty, report nothing." do
-    assert check_file("empty") == @nothing
-  end
-
-  test "When the standard input is empty, report nothing." do
-    assert check_stdin("empty") == @nothing
-  end
-
-  test "When the file is valid, report nothing." do
-    assert check_file("valid") == @nothing
-  end
-
   test "When the file contains one syntax error, report it." do
-    assert check_file("single_syntax_error") == @single_syntax_error
+    assert fixture("single_syntax_error") == @single_syntax_error
   end
 
   test "When the file contains multiple syntax errors, report the first." do
-    assert check_file("multiple_syntax_errors") == @single_syntax_error
+    assert fixture("multiple_syntax_errors") == @single_syntax_error
   end
 
   test "When the standard input contains one syntax error, report it." do
-    assert check_stdin("single_syntax_error") == @single_syntax_error
-  end
-
-  defp check_file(name) do
-    capture_io(fn -> CES.main([fixture_path(name)]) end)
-    |> Poison.Parser.parse!
-  end
-
-  defp fixture_path(name) do
-    "fixtures/#{ name }.ex"
-  end
-
-  defp check_stdin(name) do
-    capture_io(File.read!(fixture_path(name)), fn -> CES.main([]) end)
-    |> Poison.Parser.parse!
+    assert fixture("single_syntax_error", :stdio) == @single_syntax_error
   end
 end
